@@ -476,3 +476,65 @@ class Game(tk.Frame):
                 )
 
    
+    # GAME OVER / WIN
+    
+    def end_game(self, won):
+
+        self.running = False
+        self.paused = False
+        self.game_over = True
+
+        if won:
+            self.show_message(
+                "YOU WIN!",
+                f"Final Score: {self.score}"
+            )
+
+        else:
+            self.show_message(
+                "GAME OVER",
+                f"Final Score: {self.score} | Press R to Restart"
+            )
+
+    # ======================================
+    # RESTART GAME
+    # ======================================
+
+    def restart_game(self, event=None):
+
+        if self.after_id is not None:
+            self.after_cancel(self.after_id)
+            self.after_id = None
+
+        self.running = False
+        self.paused = False
+        self.game_over = False
+
+        self.score = 0
+        self.lives = 3
+        self.level = 1
+
+        self.canvas.delete("all")
+
+        self.create_hud()
+
+        self.paddle = Paddle(
+            self.canvas,
+            self.width / 2,
+            self.height - 40
+        )
+
+        self.bricks = {}
+
+        self.create_bricks()
+        self.create_ball()
+
+        self.update_hud()
+
+        self.show_message(
+            "BRICK BREAKER",
+            "Press SPACE to Start"
+        )
+
+        self.canvas.focus_set()
+

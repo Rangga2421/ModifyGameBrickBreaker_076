@@ -538,3 +538,19 @@ class Game(tk.Frame):
 
         self.canvas.focus_set()
 
+
+# 6. RUN THE GAME
+
+
+if __name__ == "__main__":
+
+    root = tk.Tk()
+
+    root.title("Brick Breaker - Neon Edition")
+    root.geometry("730x540")
+    root.resizable(False, False)
+    root.configure(bg="#0f172a")
+
+    game = Game(root)
+
+    game.mainloop()

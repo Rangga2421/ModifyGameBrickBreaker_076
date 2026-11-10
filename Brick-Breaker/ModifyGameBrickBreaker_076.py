@@ -354,3 +354,125 @@ class Game(tk.Frame):
                 16,
                 self.game_loop
             )
+
+    # ======================================
+    # COLLISION DETECTION
+    # ======================================
+
+    def check_collisions(self, previous_coords):
+
+        ball_coords = self.ball.get_position()
+        paddle_coords = self.paddle.get_position()
+
+        # Collision with paddle
+        if (
+            ball_coords[3] >= paddle_coords[1]
+            and ball_coords[1] <= paddle_coords[3]
+            and ball_coords[2] >= paddle_coords[0]
+            and ball_coords[0] <= paddle_coords[2]
+            and self.ball.dy > 0
+        ):
+
+            ball_center = (
+                ball_coords[0] + ball_coords[2]
+            ) / 2
+
+            paddle_center = (
+                paddle_coords[0] + paddle_coords[2]
+            ) / 2
+
+            hit_position = (
+                ball_center - paddle_center
+            ) / (self.paddle.width / 2)
+
+            speed = self.ball.speed
+
+            self.ball.dx = hit_position * speed
+            self.ball.dy = -abs(self.ball.dy)
+
+            # Keep the ball above the paddle
+            self.ball.move(
+                0,
+                paddle_coords[1] - ball_coords[3] - 1
+            )
+
+        # Collision with bricks
+        overlapping = self.canvas.find_overlapping(
+            *ball_coords
+        )
+
+        for item in overlapping:
+
+            if item not in self.bricks:
+                continue
+
+            brick = self.bricks[item]
+            brick_coords = brick.get_position()
+
+            # Determine collision direction
+            if (
+                previous_coords[3] <= brick_coords[1]
+                or previous_coords[1] >= brick_coords[3]
+            ):
+                self.ball.dy *= -1
+            else:
+                self.ball.dx *= -1
+
+            # Reduce brick durability
+            destroyed = brick.hit()
+
+            if destroyed:
+                del self.bricks[item]
+                self.score += 10
+                self.update_hud()
+
+            break
+
+    # cek status game
+
+    def check_game_status(self):
+
+        ball_coords = self.ball.get_position()
+
+        # Ball falls below the screen
+        if ball_coords[3] >= self.height:
+
+            self.lives -= 1
+            self.update_hud()
+
+            if self.lives <= 0:
+                self.end_game(False)
+
+            else:
+                self.create_ball()
+
+                self.running = False
+
+                self.show_message(
+                    "LIFE LOST!",
+                    "Press SPACE to Continue"
+                )
+
+            return
+
+        # All bricks destroyed
+        if len(self.bricks) == 0:
+
+            if self.level >= 5:
+                self.end_game(True)
+
+            else:
+                self.level += 1
+
+                self.update_hud()
+                self.create_bricks()
+                self.create_ball()
+
+                self.running = False
+
+                self.show_message(
+                    f"LEVEL {self.level}",
+                    "Press SPACE to Continue"
+                )
+
+   
